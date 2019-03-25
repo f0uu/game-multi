@@ -3,8 +3,7 @@ class Laser {
         this.pos = createVector(x,y);
         this.angle = a - PI/2;
         this.len = 20;
-        this.vel = createVector();
-        this.vel.add(p5.Vector.fromAngle(this.angle)).mult(7);
+        this.vel = p5.Vector.fromAngle(this.angle).mult(7);
     }
 
      update() {
