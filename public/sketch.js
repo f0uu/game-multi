@@ -20,7 +20,7 @@ function setup() {
     bg[i] = new Background(x, y, a, w);
   }
 
-  //initalize players
+  //initalize player
   p = new Player(width / 2, height / 2, null);
 
   var data = {
@@ -30,8 +30,10 @@ function setup() {
     r: p.r,
     name: p.name
   };
+  //send data about player
   socket.emit("start", data);
 
+  //recive data about players and lasers
   socket.on("player", function (data) {
     players = data;
   });
@@ -49,11 +51,14 @@ function draw() {
     bg.display();
   });
 
-  //ship
+  //draw all players and lasers from server
   drawPlayers();
   drawLasers();
+
+  //ship
   p.run();
 
+  //send data about players and lasers
   sendPlayer();
   sendLaser();
 }
@@ -89,8 +94,8 @@ function drawPlayers() {
 
 function drawLasers() {
   for (var i = 0; i < lasers.length; i++) {
-    var id = lasers[i].id;
-    if (id !== socket.id) {
+    if (lasers[i].id !== socket.id) {
+      console.log("it should draw a laser" + lasers[i].id + " || " + socket.id);
       push();
       translate(lasers[i].x, lasers[i].y);
       rotate(lasers[i].angle);
@@ -108,31 +113,36 @@ function sendPlayer() {
     y: p.pos.y,
     angle: p.angle,
     r: p.r,
-    name: p.name
   };
   socket.emit("updatePlayer", dataPlayer);
 }
 
 function sendLaser() {
+
   for (var i = 0; i < p.ammo.length; i++) {
     var dataLaser = {
       x: p.ammo[i].pos.x,
-      y: p.ammo[i].pos.y
-      // angle: p.ammo[i].angle
+      y: p.ammo[i].pos.y,
+      angle: p.ammo[i].angle,
+      index: p.ammo[i].index
     };
+    console.log("sended " + p.ammo.length);
     socket.emit("updateLaser", dataLaser);
   }
 }
 
 function keyPressed() {
   if (key == " ") {
-    p.ammo.push(new Laser(p.pos.x, p.pos.y, p.angle));
+    p.ammo.push(new Laser(p.pos.x, p.pos.y, p.angle, p.index));
     var data = {
       x: p.pos.x,
       y: p.pos.y,
       angle: p.angle,
-      len: 20
+      index: p.index
     };
+    p.index++;
+    console.log(p.index + " || lengh: " + p.ammo.length);
     socket.emit("laserRecive", data);
+
   }
 }

@@ -3,7 +3,7 @@ var app = express();
 
 var players = [];
 var lasers = [];
-var index = 0;
+var indexClient = 0;
 
 function Player(id, x, y, angle, r, name) {
     this.id = id;
@@ -14,12 +14,13 @@ function Player(id, x, y, angle, r, name) {
     this.name = name
 }
 
-function Laser(id,x,y,angle, len) {
+function Laser(id, x, y, angle, index) {
     this.id = id;
     this.x = x;
     this.y = y;
     this.angle = angle;
-    this.len = len;
+    this.index = index;
+    this.offScreen = false;
 }
 
 var server = app.listen(3000);
@@ -39,21 +40,21 @@ function send() {
 
 
 
-io.sockets.on('connection', function(socket) {
+io.sockets.on('connection', function (socket) {
 
-    console.log("New client no. " + index + ": " + socket.id);
-    index++;
+    console.log("New client no. " + indexClient + ": " + socket.id);
+    indexClient++;
 
-    socket.on('start', function(data) {
-        var player = new Player(socket.id, data.x, data.y, data.angle, data.r, index);
+    socket.on('start', function (data) {
+        var player = new Player(socket.id, data.x, data.y, data.angle, data.r, indexClient);
         players.push(player);
     });
 
-    socket.on('updatePlayer', function(dataPlayer) {
+    socket.on('updatePlayer', function (dataPlayer) {
         var p;
 
-        for(var i = 0; i < players.length; i++) {
-            if(socket.id == players[i].id) p = players[i];
+        for (var i = 0; i < players.length; i++) {
+            if (socket.id == players[i].id) p = players[i];
         }
 
         p.x = dataPlayer.x;
@@ -63,21 +64,28 @@ io.sockets.on('connection', function(socket) {
     });
 
 
-    socket.on('laserRecive', function(data) {
-        var laser = new Laser(socket.id, data.x, data.y, data.angle, data.len);
+    socket.on('laserRecive', function (data) {
+        var laser = new Laser(socket.id, data.x, data.y, data.angle, data.index);
         lasers.push(laser);
     });
 
-    socket.on('updateLaser', function(dataLaser) {
+    socket.on('updateLaser', function (dataLaser) {
         var l;
-        for(var i = 0; i < lasers.length; i++) {
-            if(socket.id == lasers[i].id) l = lasers[i];
-        }
-        l.x = dataLaser.x;
-        l.y = dataLaser.y;
-        l.angle = dataLaser.angle;
 
+        for (var i = 0; i < lasers.length; i++) {
+
+            // console.log(socket.id + " || " + dataLaser.index + " || " + lasers[i].index);
+
+            if (socket.id == lasers[i].id && dataLaser.index == lasers[i].index) {
+                l = lasers[i];
+
+                // console.log(socket.id + " || " + l.id + " || no. " + i);
+                l.x = dataLaser.x;
+                l.y = dataLaser.y;
+                l.angle = dataLaser.angle;
+                break;
+            }
+        }
     });
 
 });
-
