@@ -14,11 +14,10 @@ class Player {
   }
 
   run() {
-    this.moving();
+    this.keyEvents();
     this.update();
     this.show();
 
-    this.laser();
   }
 
 
@@ -32,10 +31,9 @@ class Player {
   }
 
   edges() {
-    if (this.pos.x > width) this.pos.x = 0;
-    if (this.pos.x < 0) this.pos.x = width;
-    if (this.pos.y > height) this.pos.y = 0;
-    if (this.pos.y < 0) this.pos.y = height;
+
+    this.pos.x = constrain(this.pos.x, -width + (this.r / 2), (width * 3) - this.r / 2);
+    this.pos.y = constrain(this.pos.y, -height + (this.r / 2), (height * 3) - this.r / 2);
   }
 
   show() {
@@ -49,24 +47,39 @@ class Player {
     pop();
   }
 
-  moving() {
+  keyEvents() {
     if (keyIsDown(LEFT_ARROW)) this.angle -= 0.1;
 
     if (keyIsDown(RIGHT_ARROW)) this.angle += 0.1;
 
     if (keyIsDown(UP_ARROW)) {
       this.acc.add(p5.Vector.fromAngle(this.angle - PI / 2));
-      this.acc.mult(0.7);
-    }
-  }
-
-
-  laser() {
-    for (var i = 0; i < this.ammo.length; i++) {
-      this.ammo[i].update();
-      this.ammo[i].show();
-      if (this.ammo[i].offScreen()) this.ammo.splice(i, 1);
+      this.acc.mult(0.8);
     }
 
   }
+
+  addLaser() {
+    //p.ammo.push(new Laser(p.pos.x, p.pos.y, p.angle));
+    this.speed = p5.Vector.fromAngle(this.angle - PI / 2).mult(5);
+    var data = {
+      x: this.pos.x,
+      y: this.pos.y,
+      velX: this.speed.x,
+      velY: this.speed.y,
+      angle: this.angle
+    };
+    socket.emit("laserRecive", data);
+
+  }
+
+
+  // laser() {
+  //   for (var i = 0; i < this.ammo.length; i++) {
+  //     this.ammo[i].update();
+  //     this.ammo[i].show();
+  //     if (this.ammo[i].offScreen()) this.ammo.splice(i, 1);
+  //   }
+
+  // }
 }

@@ -14,13 +14,22 @@ function Player(id, x, y, angle, r, name) {
     this.name = name
 }
 
-function Laser(id, x, y, angle, index) {
+function Laser(id, x, y, velX, velY, angle) {
     this.id = id;
     this.x = x;
     this.y = y;
     this.angle = angle;
-    this.index = index;
+    this.velX = velX;
+    this.velY = velY;
     this.offScreen = false;
+}
+
+function updateLasers() {
+    for (var i = 0; i < lasers.length; i++) {
+        var l = lasers[i];
+        l.x += l.velX;
+        l.y += l.velY;
+    }
 }
 
 var server = app.listen(3000);
@@ -31,10 +40,11 @@ console.log("henlo, my server is workin out at gym");
 var socket = require('socket.io');
 var io = socket(server);
 
-setInterval(send, 33);
+setInterval(send, 10);
 
 function send() {
     io.sockets.emit('player', players);
+    updateLasers();
     io.sockets.emit('laser', lasers);
 }
 
@@ -65,27 +75,9 @@ io.sockets.on('connection', function (socket) {
 
 
     socket.on('laserRecive', function (data) {
-        var laser = new Laser(socket.id, data.x, data.y, data.angle, data.index);
+        var laser = new Laser(socket.id, data.x, data.y, data.velX, data.velY, data.angle);
         lasers.push(laser);
     });
 
-    socket.on('updateLaser', function (dataLaser) {
-        var l;
-
-        for (var i = 0; i < lasers.length; i++) {
-
-            // console.log(socket.id + " || " + dataLaser.index + " || " + lasers[i].index);
-
-            if (socket.id == lasers[i].id && dataLaser.index == lasers[i].index) {
-                l = lasers[i];
-
-                // console.log(socket.id + " || " + l.id + " || no. " + i);
-                l.x = dataLaser.x;
-                l.y = dataLaser.y;
-                l.angle = dataLaser.angle;
-                break;
-            }
-        }
-    });
 
 });

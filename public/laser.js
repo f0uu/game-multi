@@ -12,8 +12,8 @@ class Laser {
     }
 
     offScreen() {
-        return (this.pos.x > width + this.len || this.pos.x < -this.len ||
-            this.pos.y > height + this.len || this.pos.y < -this.len);
+        return (this.pos.x > (width * 3) + this.len || this.pos.x < -width - this.len ||
+            this.pos.y > (height * 3) + this.len || this.pos.y < -height - this.len);
     }
 
     show() {
